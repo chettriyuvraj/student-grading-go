@@ -84,7 +84,33 @@ func parseCSV(filePath string) []student {
 }
 
 func calculateGrade(students []student) []studentStat {
-	return nil
+	/* Initialize slice and a struct to easily match grades with boundaries */
+	studentStats := []studentStat{}
+	gradeBoundaries := []struct {
+		grade    Grade
+		boundary float32
+	}{
+		{A, 70},
+		{B, 50},
+		{C, 35},
+		{F, 0},
+	}
+
+	/* Iterate over each student */
+	for _, student := range students {
+		var finalGrade Grade
+		finalScore := float32(student.test1Score+student.test2Score+student.test3Score+student.test4Score) / 4
+		for _, gradeBoundary := range gradeBoundaries {
+			grade, boundary := gradeBoundary.grade, gradeBoundary.boundary
+			if finalScore >= boundary {
+				finalGrade = grade
+				break
+			}
+		}
+		studentStats = append(studentStats, studentStat{student: student, finalScore: finalScore, grade: finalGrade})
+	}
+
+	return studentStats
 }
 
 func findOverallTopper(gradedStudents []studentStat) studentStat {
