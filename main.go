@@ -35,10 +35,11 @@ type studentStat struct {
 
 /* Could also have used bufio.Scanner */
 func parseCSV(filePath string) []student {
-	studentData := []student{}
+	students := []student{}
 
 	/* Open file, grab file descriptor */
 	fd, err := os.Open(gradesFilename)
+	defer fd.Close()
 	if err != nil {
 		log.Fatalf("error opening grades csv file: %v", err)
 	}
@@ -71,16 +72,16 @@ func parseCSV(filePath string) []student {
 		fields := strings.Split(s, ",")
 
 		/* Create student */
-		studentObj, err := parseStudentObj(fields)
+		parsedStudent, err := parseStudent(fields)
 		if err != nil {
 			log.Fatalf("error in row %d: %v", rowCount, err)
 		}
 
-		studentData = append(studentData, studentObj)
+		students = append(students, parsedStudent)
 		rowCount++
 	}
 
-	return studentData
+	return students
 }
 
 func calculateGrade(students []student) []studentStat {
@@ -114,28 +115,28 @@ func calculateGrade(students []student) []studentStat {
 }
 
 func findOverallTopper(gradedStudents []studentStat) studentStat {
-	topperStat := studentStat{}
-	for _, curStudentStat := range gradedStudents {
-		if curStudentStat.finalScore > topperStat.finalScore {
-			topperStat = curStudentStat
+	topper := studentStat{}
+	for _, cur := range gradedStudents {
+		if cur.finalScore > topper.finalScore {
+			topper = cur
 		}
 	}
-	return topperStat
+	return topper
 }
 
 func findTopperPerUniversity(gs []studentStat) map[string]studentStat {
-	universityTopperMap := map[string]studentStat{}
+	universityToppers := map[string]studentStat{}
 
-	for _, curStudentStat := range gs {
-		university := curStudentStat.university
-		universityTopperStat, exists := universityTopperMap[university]
+	for _, cur := range gs {
+		university := cur.university
+		universityTopper, exists := universityToppers[university]
 
 		/* If curStudent has greater score than current university topper OR if this university has been seen for the first time */
-		if (exists && curStudentStat.finalScore > universityTopperStat.finalScore) || !exists {
-			universityTopperMap[university] = curStudentStat
+		if (exists && cur.finalScore > universityTopper.finalScore) || !exists {
+			universityToppers[university] = cur
 		}
 	}
-	return universityTopperMap
+	return universityToppers
 }
 
 /**** Helpers ****/
@@ -149,7 +150,7 @@ func validateStudentData(fields []string) error {
 	return nil
 }
 
-func parseStudentObj(fields []string) (student, error) {
+func parseStudent(fields []string) (student, error) {
 	/* Validation */
 	err := validateStudentData(fields)
 	if err != nil {
@@ -168,6 +169,6 @@ func parseStudentObj(fields []string) (student, error) {
 	}
 
 	/* Create student */
-	studentObj := student{firstName: firstName, lastName: lastName, university: university, test1Score: testScores[0], test2Score: testScores[1], test3Score: testScores[2], test4Score: testScores[3]}
-	return studentObj, nil
+	parsedStudent := student{firstName: firstName, lastName: lastName, university: university, test1Score: testScores[0], test2Score: testScores[1], test3Score: testScores[2], test4Score: testScores[3]}
+	return parsedStudent, nil
 }
