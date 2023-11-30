@@ -33,6 +33,8 @@ type studentStat struct {
 	grade      Grade
 }
 
+/* Unhandled edgecases: Multiple university toppers/Multiple students with same score */
+
 /* Could also have used bufio.Scanner */
 func parseCSV(filePath string) []student {
 	students := []student{}
