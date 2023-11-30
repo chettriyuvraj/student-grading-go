@@ -84,7 +84,7 @@ func parseCSV(filePath string) []student {
 }
 
 func calculateGrade(students []student) []studentStat {
-	/* Initialize slice and a struct to easily match grades with boundaries */
+	/* Initialize slice and a struct to easily match grades with scores */
 	studentStats := []studentStat{}
 	gradeBoundaries := []struct {
 		grade    Grade
@@ -114,14 +114,31 @@ func calculateGrade(students []student) []studentStat {
 }
 
 func findOverallTopper(gradedStudents []studentStat) studentStat {
-	return studentStat{}
+	topperStat := studentStat{}
+	for _, curStudentStat := range gradedStudents {
+		if curStudentStat.finalScore > topperStat.finalScore {
+			topperStat = curStudentStat
+		}
+	}
+	return topperStat
 }
 
 func findTopperPerUniversity(gs []studentStat) map[string]studentStat {
-	return nil
+	universityTopperMap := map[string]studentStat{}
+
+	for _, curStudentStat := range gs {
+		university := curStudentStat.university
+		universityTopperStat, exists := universityTopperMap[university]
+
+		/* If curStudent has greater score than current university topper OR if this university has been seen for the first time */
+		if (exists && curStudentStat.finalScore > universityTopperStat.finalScore) || !exists {
+			universityTopperMap[university] = curStudentStat
+		}
+	}
+	return universityTopperMap
 }
 
-/**** Helper ****/
+/**** Helpers ****/
 
 func validateStudentData(fields []string) error {
 	/* Add list of validations */
